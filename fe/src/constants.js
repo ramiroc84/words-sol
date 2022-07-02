@@ -1,4 +1,4 @@
-export const contractAddress = "0x5fbdb2315678afecb367f032d93f642f64180aa3";
+export const contractAddress = "0x7b5b85f94383925AF5e98754463c5Ce566FE7530"; //goerli
 
 export const abi = [
   {
@@ -14,7 +14,7 @@ export const abi = [
   },
   {
     inputs: [],
-    name: "Palabra__NotOwner",
+    name: "Palabra__NotEnoughMoney",
     type: "error",
   },
   {
@@ -57,7 +57,7 @@ export const abi = [
     ],
     name: "setPalabra",
     outputs: [],
-    stateMutability: "nonpayable",
+    stateMutability: "payable",
     type: "function",
   },
   {

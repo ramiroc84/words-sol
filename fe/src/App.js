@@ -76,13 +76,13 @@ const BackgroundAnimation = styled.div`
   overflow: hidden;
 `;
 const TickerRight = styled.div`
-  color: #eeeeeebb;
+  color: #eeeeee;
   transform: translateX(10%);
   font-weight: 300;
   animation: 60s ${rightToLeft} linear infinite;
 `;
 const TickerLeft = styled.div`
-  color: #eeeeeebb;
+  color: #eeeeee;
   transform: translateX(-10%);
   animation: 60s ${leftToRight} linear infinite;
   font-style: italic;
@@ -96,7 +96,11 @@ const PalabraTitulo = styled.div`
   right: 150px;
   font-size: 190px;
   color: #222222ee;
-  text-shadow: 0px 2px 13px rgba(31, 31, 31, 0.35);
+
+  /* text-shadow: 0px 3px 0px #b2a98f, 0px 14px 10px rgba(0, 0, 0, 0.15),
+    0px 24px 2px rgba(0, 0, 0, 0.1), 0px 34px 30px rgba(0, 0, 0, 0.1); */
+  text-shadow: 0px 15px 5px rgba(0, 0, 0, 0.1),
+    10px 20px 5px rgba(0, 0, 0, 0.05), -10px 20px 5px rgba(0, 0, 0, 0.05);
 `;
 
 const Palabra = styled.span``;
@@ -154,6 +158,7 @@ function App() {
   const [isOwner, setIsOwner] = useState(false);
   // const [ownerAddress, setOwnerAddress] = useState("");
   const [input, setInput] = useState("");
+  const [cargando, setCargando] = useState(false);
 
   const repetir = Array.from(Array(30).keys());
 
@@ -201,14 +206,29 @@ function App() {
       const contract = new ethers.Contract(contractAddress, abi, signer);
 
       try {
-        const transactionResponse = await contract.setPalabra(input);
+        let transactionResponse;
+        setCargando(true);
+        if (isOwner) {
+          transactionResponse = await contract.setPalabra(input);
+          // await listenForTransactionMine(transactionResponse, provider);
+          // const NuevaPalabra = await contract.getPalabra();
+
+          // setPalabra(NuevaPalabra);
+          // setInput("");
+        } else {
+          transactionResponse = await contract.setPalabra(input, {
+            value: ethers.utils.parseEther("0.1"),
+          });
+        }
         await listenForTransactionMine(transactionResponse, provider);
         const NuevaPalabra = await contract.getPalabra();
-
+        setCargando(false);
         setPalabra(NuevaPalabra);
         setInput("");
       } catch (e) {
         console.log(e);
+        setCargando(false);
+        setInput("");
       }
 
       // console.log(signer); // conecta al nodo de metamask
@@ -352,10 +372,10 @@ function App() {
               <Form.Control>
                 <Form.Input
                   type="text"
-                  placeholder="only owner can change it"
+                  placeholder="change it for 0.1 ETH"
                   required
                   pattern="[a-zd.]{5,}"
-                  disabled={!isOwner ? true : false}
+                  disabled={!conectado || cargando ? true : false}
                   onChange={handleInputChange}
                   value={input}
                 />
@@ -366,9 +386,11 @@ function App() {
               {/* <Button color="primary" className="is-loading"> */}
               <Button
                 color="primary"
-                className="button is-success"
+                className={
+                  !cargando ? "button is-success" : "button is-loading"
+                }
                 onClick={onClickCambiarPalabra}
-                disabled={!isOwner ? true : false}
+                disabled={!conectado || cargando ? true : false}
               >
                 Change
               </Button>
